@@ -1,1 +1,399 @@
-# basesnc
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cerebro Adolescente</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap');
+:root{
+  --bg:#0a0a0f;--panel:#111118;--border:#1e1e2e;
+  --accent:#c8a97e;--accent2:#7eb5c8;--text:#e8e4dc;--muted:#6b6b7a;
+  --danger:#c87e7e;--success:#7ec8a0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+header{padding:13px 26px;border-bottom:1px solid var(--border);display:flex;align-items:baseline;gap:14px;background:var(--bg);}
+header h1{font-family:'DM Serif Display',serif;font-size:1.35rem;color:var(--accent);letter-spacing:.02em;}
+.sub{font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.13em;}
+.hint{margin-left:auto;font-size:.6rem;color:var(--muted);font-style:italic;}
+main{flex:1;display:flex;overflow:hidden;}
+#cc{flex:1;position:relative;background:#0a0a0f;}
+canvas{display:block;width:100%!important;height:100%!important;cursor:grab;}
+canvas:active{cursor:grabbing;}
+#tip{position:absolute;background:rgba(10,10,15,.95);border:1px solid var(--accent);color:var(--accent);font-size:.64rem;padding:4px 10px;pointer-events:none;display:none;white-space:nowrap;text-transform:uppercase;letter-spacing:.09em;}
+#panel{width:300px;background:var(--panel);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+#ph{padding:18px 20px 13px;border-bottom:1px solid var(--border);}
+#rn{font-family:'DM Serif Display',serif;font-size:1.2rem;color:var(--accent);margin-bottom:3px;line-height:1.25;}
+#rl{font-size:.6rem;color:var(--muted);font-style:italic;}
+#pb{flex:1;overflow-y:auto;padding:16px 20px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+.sec{margin-bottom:18px;}
+.sl{font-size:.55rem;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-bottom:7px;display:flex;align-items:center;gap:7px;}
+.sl::after{content:'';flex:1;height:1px;background:var(--border);}
+.sec p{font-size:.71rem;line-height:1.72;color:var(--text);opacity:.85;}
+.badge{display:inline-block;font-size:.55rem;padding:2px 8px;text-transform:uppercase;letter-spacing:.09em;margin-top:7px;border-radius:2px;}
+.badge.risk{background:rgba(200,126,126,.15);color:var(--danger);border:1px solid rgba(200,126,126,.3);}
+.badge.ok{background:rgba(126,200,160,.12);color:var(--success);border:1px solid rgba(126,200,160,.25);}
+.badge.mid{background:rgba(200,169,126,.12);color:var(--accent);border:1px solid rgba(200,169,126,.25);}
+.mb{margin-top:9px;}
+.mbl{display:flex;justify-content:space-between;font-size:.58rem;color:var(--muted);margin-bottom:4px;}
+.bt{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.bf{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:2px;}
+.mba{font-size:.56rem;color:var(--muted);margin-top:3px;font-style:italic;}
+#es{padding:36px 18px;color:var(--muted);font-size:.7rem;line-height:1.75;}
+#leg{position:absolute;bottom:16px;left:16px;display:flex;flex-direction:column;gap:5px;}
+.li{display:flex;align-items:center;gap:7px;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;background:rgba(10,10,15,.8);padding:2px 8px 2px 4px;border-radius:2px;}
+.ld{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+#rh{position:absolute;bottom:16px;right:16px;font-size:.57rem;color:var(--muted);background:rgba(10,10,15,.8);padding:4px 9px;border-radius:2px;text-align:right;line-height:1.65;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Cerebro Adolescente</h1>
+  <span class="sub">Atlas Interactivo &middot; Bases Neurológicas de la Conducta</span>
+  <span class="hint">Arrastra &middot; Scroll &middot; Clic en región</span>
+</header>
+<main>
+  <div id="cc">
+    <div id="tip"></div>
+    <div id="leg"></div>
+    <div id="rh">&#8635; Arrastra para rotar<br>&#8661; Scroll para zoom</div>
+  </div>
+  <div id="panel">
+    <div id="ph"><div id="rn">Selecciona una región</div><div id="rl"></div></div>
+    <div id="pb">
+      <div id="es">Haz clic sobre cualquier región coloreada para explorar su rol durante la adolescencia, su trayectoria de maduración y qué ocurre si ese proceso se interrumpe.</div>
+      <div id="ic" style="display:none"></div>
+    </div>
+  </div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script>
+var REGIONS=[
+  {id:'prefrontal',name:'Corteza Prefrontal',latin:'Cortex praefrontalis',color:0x4a90c8,em:0x0d2a40,mat:28,matAge:'Madurez completa: 25-27 años',badge:'mid',bText:'Última región en madurar',
+   ado:'Activa pero en construcción. Regula juicio, planeación y control de impulsos. La amígdala la supera en velocidad: el adolescente reacciona antes de pensar.',
+   fut:'Con vínculos seguros y retos moderados consolida conexiones con el sistema límbico. Se convierte en la base del carácter adulto y la agencia.',
+   risk:'Entornos caóticos enseñan al cerebro que planear es inútil. Resultado: impulsividad crónica, dificultad para comprometerse, baja tolerancia a la frustración.'},
+  {id:'parietal',name:'Córtex Parietal',latin:'Cortex parietalis',color:0x4ab870,em:0x0a3010,mat:55,matAge:'Madurez completa: 20-22 años',badge:'ok',bText:'Desarrollo progresivo',
+   ado:'Integra información sensorial y procesamiento espacial. En plena refinación: mejora coordinación visomotora y comprensión de relaciones abstractas.',
+   fut:'Al madurar permite razonamiento matemático fluido, mejor orientación espacial y procesamiento multimodal más eficiente.',
+   risk:'Privación sensorial o sedentarismo extremo retrasa la integración sensorial, afectando coordinación y aprendizaje.'},
+  {id:'temporal',name:'Córtex Temporal',latin:'Cortex temporalis',color:0xd07820,em:0x501800,mat:60,matAge:'Madurez completa: 20-22 años',badge:'ok',bText:'Alta plasticidad lingüística',
+   ado:'Procesa lenguaje, memoria semántica y reconocimiento social. Alta plasticidad: mejor momento para aprender idiomas y desarrollar vocabulario emocional.',
+   fut:'Se especializa en narrativas complejas, ironía, metáfora y contexto social. La lectura de situaciones mejora notablemente.',
+   risk:'Déficit de estimulación lingüística limita el desarrollo. Depresión severa puede afectar el procesamiento temporal.'},
+  {id:'occipital',name:'Córtex Occipital',latin:'Cortex occipitalis',color:0x9060c0,em:0x200050,mat:82,matAge:'Madurez completa: 16-18 años',badge:'ok',bText:'Madura relativamente pronto',
+   ado:'Procesa información visual. Una de las primeras regiones en madurar. Agudeza visual y capacidad de procesamiento casi adultos.',
+   fut:'Refina la integración con córtex temporal y parietal. Las conexiones se vuelven más eficientes con la experiencia.',
+   risk:'Exposición excesiva a pantallas altera patrones de atención visual. La privación de sueño afecta directamente el procesamiento visual.'},
+  {id:'amygdala',name:'Amígdala',latin:'Corpus amygdaloideum',color:0xc83030,em:0x600000,mat:90,matAge:'Pico de actividad: 13-16 años',badge:'risk',bText:'Zona de alta intensidad emocional',
+   ado:'Hiperactivada. Procesa amenazas, rechazo y vergüenza con intensidad que no se repite. Explica la sensibilidad al grupo y reacciones emocionales desproporcionadas.',
+   fut:'La corteza prefrontal madura aprende a modularla. La vida emocional adulta sigue siendo rica, pero con más capacidad de observarla sin ser arrasado.',
+   risk:'Trauma o estrés crónico la dejan en alerta permanente. Se asocia a ansiedad generalizada, hipersensibilidad al rechazo y dificultad para confiar.'},
+  {id:'hipocampo',name:'Hipocampo',latin:'Hippocampus',color:0x28a060,em:0x003818,mat:65,matAge:'Madurez completa: 18-20 años',badge:'ok',bText:'Alta plasticidad con estímulo',
+   ado:'Central para la memoria episódica. Las experiencias de esta etapa dejan huellas especialmente profundas. Contextualiza cuándo el miedo es apropiado.',
+   fut:'Genera neuronas nuevas con ejercicio aeróbico, sueño reparador y aprendizaje activo. Sostiene memoria y bienestar emocional en la adultez.',
+   risk:'El cortisol crónico lo daña físicamente y reduce su volumen. Deteriora la memoria, la regulación emocional y predispone a depresión.'},
+  {id:'cingulado',name:'Cingulado Anterior',latin:'Cortex cingularis anterior',color:0xe07020,em:0x582000,mat:45,matAge:'Madurez completa: 22-24 años',badge:'mid',bText:'Clave para tolerar el error',
+   ado:'Media entre emoción y cognición. Detecta conflicto y error. La vergüenza ante el fallo puede ser paralizante. Participa en la empatía afectiva.',
+   fut:'Permite sostener la contradicción: decidir sin certeza total, tolerar errores propios sin que destruyan la autoestima.',
+   risk:'Desarrollo interrumpido se asocia a perfeccionismo extremo, rigidez cognitiva y mayor vulnerabilidad a TOC y ansiedad.'},
+  {id:'estriado',name:'Estriado Ventral',latin:'Striatum ventrale',color:0xd4a020,em:0x503000,mat:88,matAge:'Pico de actividad: 13-16 años',badge:'risk',bText:'Alto riesgo adictivo sin regulación',
+   ado:'Centro de recompensa y dopamina. Responde con más intensidad a premios y novedades que en cualquier otra etapa. Pertenecer al grupo se siente como una recompensa poderosa.',
+   fut:'Se calibra con señales prefrontales. La recompensa diferida se vuelve accesible. Permite sostener proyectos largos y disfrutar logros abstractos.',
+   risk:'Sin contrapeso prefrontal facilita conductas adictivas. El problema no es el estriado, es la ausencia de herramientas para modularlo.'},
+  {id:'cerebellum',name:'Cerebelo',latin:'Cerebellum',color:0x7eb5c8,em:0x1a3a50,mat:75,matAge:'Madurez completa: 18-20 años',badge:'mid',bText:'Reforzado por práctica activa',
+   ado:'Coordina movimiento, timing y equilibrio. También participa en funciones cognitivas: ritmo, predicción y coordinación social.',
+   fut:'Optimiza rutas neuronales con práctica deliberada. Música, deporte y artes consolidan habilidades de por vida.',
+   risk:'Sedentarismo extremo o alcohol adolescente alteran su desarrollo, afectando coordinación y estabilidad emocional.'},
+  {id:'brainstem',name:'Tronco Encefálico',latin:'Truncus encephali',color:0xc8a97e,em:0x3a2800,mat:96,matAge:'Maduro desde antes del nacimiento',badge:'ok',bText:'Funciones vitales autónomas',
+   ado:'Controla respiración, ritmo cardíaco y ciclos de sueño-vigilia. Hay un retraso biológico del ritmo circadiano adolescente: no es flojera, es neurobiología.',
+   fut:'Mantiene sus funciones de por vida. Los patrones de sueño se regularizan hacia los 20 años.',
+   risk:'Privación crónica de sueño deteriora regulación emocional, función cognitiva y neurogénesis hipocampal en cascada.'},
+];
+
+// Legend
+var legColors=[
+  {color:'#4a90c8',label:'Control ejecutivo'},
+  {color:'#c83030',label:'Respuesta emocional'},
+  {color:'#28a060',label:'Memoria'},
+  {color:'#d4a020',label:'Recompensa'},
+  {color:'#7eb5c8',label:'Cerebelo'},
+];
+var legEl=document.getElementById('leg');
+legColors.forEach(function(item){
+  var d=document.createElement('div');d.className='li';
+  d.innerHTML='<div class="ld" style="background:'+item.color+'"></div>'+item.label;
+  legEl.appendChild(d);
+});
+
+// THREE
+var cc=document.getElementById('cc');
+var tip=document.getElementById('tip');
+function W(){return cc.clientWidth;}
+function H(){return cc.clientHeight;}
+
+var renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.setClearColor(0x0a0a0f,1);
+cc.appendChild(renderer.domElement);
+
+var scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0a0a0f);
+scene.fog=new THREE.Fog(0x0a0a0f,12,25);
+
+var camera=new THREE.PerspectiveCamera(42,W()/H(),0.1,100);
+camera.position.set(0,0.2,6.8);
+
+// Lights
+scene.add(new THREE.AmbientLight(0x223344,1.0));
+var keyL=new THREE.DirectionalLight(0xc8d8ff,1.6);
+keyL.position.set(4,5,4);keyL.castShadow=true;scene.add(keyL);
+var fillL=new THREE.DirectionalLight(0x7eb5c8,0.7);
+fillL.position.set(-4,2,2);scene.add(fillL);
+var topL=new THREE.DirectionalLight(0xaaccff,0.5);
+topL.position.set(0,6,-2);scene.add(topL);
+var rimL=new THREE.DirectionalLight(0x4466aa,0.8);
+rimL.position.set(0,-3,-4);scene.add(rimL);
+
+// Noise
+function hashN(i){return Math.abs(Math.floor(((Math.sin(i*127.1+311.7)*43758.5453)%1)*255));}
+function lerpN(a,b,t){return a+t*(b-a);}
+function fadeN(t){return t*t*t*(t*(t*6-15)+10);}
+var GR=[[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],[1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],[0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
+function pnoise(x,y,z){
+  var X=Math.floor(x)&255,Y=Math.floor(y)&255,Z=Math.floor(z)&255;
+  x-=Math.floor(x);y-=Math.floor(y);z-=Math.floor(z);
+  var u=fadeN(x),v=fadeN(y),w=fadeN(z);
+  var A=(hashN(X)+Y)&255,B=(hashN(X+1)+Y)&255;
+  function dt(g,px,py,pz){return g[0]*px+g[1]*py+g[2]*pz;}
+  return lerpN(
+    lerpN(lerpN(dt(GR[hashN(A+Z)%12],x,y,z),dt(GR[hashN(B+Z)%12],x-1,y,z),u),
+          lerpN(dt(GR[hashN(A+1+Z)%12],x,y-1,z),dt(GR[hashN(B+1+Z)%12],x-1,y-1,z),u),v),
+    lerpN(lerpN(dt(GR[hashN(A+Z+1)%12],x,y,z-1),dt(GR[hashN(B+Z+1)%12],x-1,y,z-1),u),
+          lerpN(dt(GR[hashN(A+Z+2)%12],x,y-1,z-1),dt(GR[hashN(B+Z+2)%12],x-1,y-1,z-1),u),v),w);
+}
+function fbm(x,y,z,o){
+  var val=0,amp=0.5,freq=1;
+  for(var i=0;i<(o||4);i++){val+=amp*pnoise(x*freq,y*freq,z*freq);amp*=0.5;freq*=2.1;}
+  return val;
+}
+
+// Build cerebrum
+function buildCerebrum(){
+  var geo=new THREE.SphereGeometry(1.0,128,96);
+  var pos=geo.attributes.position;
+  for(var i=0;i<pos.count;i++){
+    var x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i);
+    x*=1.44;y*=1.06;z*=1.16;
+    var fz=Math.max(0,z+0.2);z+=fz*0.25;y+=fz*0.06;
+    var tN=Math.max(0,-y+0.05)*Math.abs(x)*0.4;y-=tN*0.28;
+    if(y<-0.32){y=-0.32+(y+0.32)*0.45;}
+    var ms=Math.exp(-x*x*30)*Math.max(0,y+0.2)*0.09;y-=ms;
+    var sd=y+0.05;
+    var sylv=Math.exp(-(sd*sd)*18)*Math.abs(x)*0.06;
+    var r0=Math.sqrt(x*x+y*y+z*z);
+    var nx=x/r0,ny=y/r0,nz=z/r0;
+    var gyri=fbm(nx*3.0+12,ny*3.0+12,nz*3.0+12,3)*0.12;
+    var sulci=fbm(nx*8+4,ny*8+4,nz*8+4,2)*0.042;
+    var cd=z-0.05;
+    var central=Math.exp(-(cd*cd)*10)*Math.max(0,y-0.1)*0.055;
+    var disp=gyri+sulci-central-sylv*0.5;
+    x+=nx*disp;y+=ny*disp;z+=nz*disp;
+    pos.setXYZ(i,x,y,z);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
+// Build cerebellum
+function buildCerebellum(){
+  var geo=new THREE.SphereGeometry(0.52,80,64);
+  var pos=geo.attributes.position;
+  for(var i=0;i<pos.count;i++){
+    var x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i);
+    x*=1.65;y*=0.60;z*=1.05;
+    if(y>0.08){y=0.08+(y-0.08)*0.25;}
+    var r0=Math.sqrt(x*x+y*y+z*z);
+    var nx=x/r0,ny=y/r0,nz=z/r0;
+    var folia=Math.sin(nz*20+nx*5)*0.055;
+    var fine=Math.sin(nz*40+ny*12)*0.018;
+    var disp=folia+fine;
+    x+=nx*disp;y+=ny*disp;z+=nz*disp;
+    pos.setXYZ(i,x,y,z);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
+// Build brainstem
+function buildBrainstem(){
+  var curve=new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0,-0.55,0.18),
+    new THREE.Vector3(0,-0.95,0.05),
+    new THREE.Vector3(0.04,-1.38,-0.08),
+    new THREE.Vector3(0,-1.75,-0.14)
+  ]);
+  return new THREE.TubeGeometry(curve,24,0.19,14,false);
+}
+
+var pivot=new THREE.Group();scene.add(pivot);
+
+var cbrGeo=buildCerebrum();
+// Dark translucent brain shell - dark mode
+var cbrMat=new THREE.MeshStandardMaterial({color:0x1a2640,roughness:0.65,metalness:0.15,transparent:true,opacity:0.60});
+var cbrMesh=new THREE.Mesh(cbrGeo,cbrMat);
+cbrMesh.castShadow=true;cbrMesh.receiveShadow=true;pivot.add(cbrMesh);
+
+// Wireframe overlay
+var wireMat=new THREE.MeshStandardMaterial({color:0x7eb5c8,wireframe:true,transparent:true,opacity:0.05});
+var wireMesh=new THREE.Mesh(cbrGeo,wireMat);
+wireMesh.scale.set(1.004,1.004,1.004);pivot.add(wireMesh);
+
+// Cerebellum
+var cblGeo=buildCerebellum();
+var cblMesh=new THREE.Mesh(cblGeo,new THREE.MeshStandardMaterial({color:0x1a2030,roughness:0.75,metalness:0.1,transparent:true,opacity:0.55}));
+cblMesh.position.set(0,-0.86,-0.80);cblMesh.rotation.x=0.12;cblMesh.castShadow=true;pivot.add(cblMesh);
+
+// Brainstem
+var bsMesh=new THREE.Mesh(buildBrainstem(),new THREE.MeshStandardMaterial({color:0x2a1808,roughness:0.9,metalness:0,transparent:true,opacity:0.7}));
+bsMesh.castShadow=true;pivot.add(bsMesh);
+
+// Region hotspots
+var regionCfg={
+  prefrontal:{pos:[0,0.65,1.22],sc:[0.80,0.44,0.50]},
+  parietal:  {pos:[0,0.82,-0.18],sc:[0.88,0.38,0.58]},
+  temporal:  {pos:[1.32,-0.10,0.28],sc:[0.40,0.50,0.68]},
+  occipital: {pos:[0,0.25,-1.22],sc:[0.70,0.40,0.36]},
+  amygdala:  {pos:[0.78,-0.25,0.50],sc:[0.26,0.24,0.26]},
+  hipocampo: {pos:[0.72,-0.32,0.05],sc:[0.26,0.20,0.40]},
+  cingulado: {pos:[0,0.48,0.38],sc:[0.30,0.40,0.48]},
+  estriado:  {pos:[0.40,0.10,0.62],sc:[0.32,0.28,0.28]},
+  cerebellum:{pos:[0,-0.86,-0.80],sc:[0.85,0.50,0.70]},
+  brainstem: {pos:[0,-1.15,0.04],sc:[0.19,0.48,0.19]},
+};
+
+var regionMeshes=[];
+var bilateral=['temporal','amygdala','hipocampo','estriado'];
+
+REGIONS.forEach(function(r){
+  var cfg=regionCfg[r.id];if(!cfg)return;
+  var geo=new THREE.SphereGeometry(0.38,24,20);
+  var pa=geo.attributes.position;
+  for(var i=0;i<pa.count;i++){
+    var x=pa.getX(i),y=pa.getY(i),z=pa.getZ(i);
+    var r0=Math.sqrt(x*x+y*y+z*z);
+    var n=fbm(x*4+r.id.charCodeAt(0)*0.1,y*4,z*4,2)*0.065;
+    pa.setXYZ(i,x+(x/r0)*n,y+(y/r0)*n,z+(z/r0)*n);
+  }
+  geo.computeVertexNormals();
+  var mat=new THREE.MeshStandardMaterial({color:r.color,emissive:r.em,emissiveIntensity:0.25,roughness:0.5,metalness:0.12,transparent:true,opacity:0.90});
+  var mesh=new THREE.Mesh(geo,mat);
+  mesh.position.set(cfg.pos[0],cfg.pos[1],cfg.pos[2]);
+  mesh.scale.set(cfg.sc[0],cfg.sc[1],cfg.sc[2]);
+  mesh.userData=r;mesh.castShadow=true;
+  pivot.add(mesh);regionMeshes.push(mesh);
+  if(bilateral.indexOf(r.id)!==-1){
+    var m2=mesh.clone();m2.material=mat.clone();
+    m2.position.set(-cfg.pos[0],cfg.pos[1],cfg.pos[2]);
+    m2.userData=r;pivot.add(m2);regionMeshes.push(m2);
+  }
+});
+
+// Controls
+var isDrag=false,prevX=0,prevY=0,rotX=0.08,rotY=-0.18,tRX=0.08,tRY=-0.18,zv=1.0;
+var mouse=new THREE.Vector2(),ray=new THREE.Raycaster();
+var canvas=renderer.domElement;
+
+canvas.addEventListener('mousedown',function(e){isDrag=true;prevX=e.clientX;prevY=e.clientY;});
+window.addEventListener('mouseup',function(){isDrag=false;});
+window.addEventListener('mousemove',function(e){
+  if(isDrag){
+    tRY+=(e.clientX-prevX)*0.009;tRX+=(e.clientY-prevY)*0.009;
+    tRX=Math.max(-1.1,Math.min(1.1,tRX));prevX=e.clientX;prevY=e.clientY;
+  }
+  var rect=cc.getBoundingClientRect();
+  mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
+  mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
+  ray.setFromCamera(mouse,camera);
+  var hits=ray.intersectObjects(regionMeshes);
+  if(hits.length){
+    var r=hits[0].object.userData;
+    tip.style.display='block';
+    tip.style.left=(e.clientX-rect.left+14)+'px';
+    tip.style.top=(e.clientY-rect.top-8)+'px';
+    tip.textContent=r.name;
+    canvas.style.cursor='pointer';
+  } else {
+    tip.style.display='none';
+    canvas.style.cursor=isDrag?'grabbing':'grab';
+  }
+});
+canvas.addEventListener('wheel',function(e){zv+=e.deltaY*0.0008;zv=Math.max(0.55,Math.min(2.0,zv));e.preventDefault();},{passive:false});
+var tp=null;
+canvas.addEventListener('touchstart',function(e){tp={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
+canvas.addEventListener('touchmove',function(e){
+  if(!tp)return;
+  tRY+=(e.touches[0].clientX-tp.x)*0.011;tRX+=(e.touches[0].clientY-tp.y)*0.011;
+  tp={x:e.touches[0].clientX,y:e.touches[0].clientY};e.preventDefault();
+},{passive:false});
+
+var selId=null;
+canvas.addEventListener('click',function(e){
+  var rect=cc.getBoundingClientRect();
+  mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
+  mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
+  ray.setFromCamera(mouse,camera);
+  var hits=ray.intersectObjects(regionMeshes);
+  regionMeshes.forEach(function(m){m.material.emissiveIntensity=0.25;m.material.opacity=0.90;});
+  if(hits.length){
+    var r=hits[0].object.userData;selId=r.id;
+    regionMeshes.forEach(function(m){
+      if(m.userData.id===r.id){m.material.emissiveIntensity=0.80;m.material.opacity=1.0;}
+      else{m.material.emissiveIntensity=0.04;m.material.opacity=0.35;}
+    });
+    showPanel(r);
+  }
+});
+
+function showPanel(r){
+  document.getElementById('rn').textContent=r.name;
+  document.getElementById('rl').textContent=r.latin;
+  document.getElementById('es').style.display='none';
+  var ic=document.getElementById('ic');ic.style.display='block';
+  ic.innerHTML=
+    '<div class="sec">'+
+      '<div class="sl">Madurez en adolescencia</div>'+
+      '<div class="mb">'+
+        '<div class="mbl"><span>Desarrollo actual</span><span>'+r.mat+'%</span></div>'+
+        '<div class="bt"><div class="bf" style="width:'+r.mat+'%"></div></div>'+
+        '<div class="mba">'+r.matAge+'</div>'+
+      '</div>'+
+      '<span class="badge '+r.badge+'">'+r.bText+'</span>'+
+    '</div>'+
+    '<div class="sec"><div class="sl">En la adolescencia</div><p>'+r.ado+'</p></div>'+
+    '<div class="sec"><div class="sl">Desarrollo esperado</div><p>'+r.fut+'</p></div>'+
+    '<div class="sec"><div class="sl">Si el desarrollo se interrumpe</div><p>'+r.risk+'</p></div>';
+}
+
+function resize(){renderer.setSize(W(),H());camera.aspect=W()/H();camera.updateProjectionMatrix();}
+resize();window.addEventListener('resize',resize);
+
+var tick=0;
+(function loop(){
+  requestAnimationFrame(loop);tick+=0.012;
+  rotX+=(tRX-rotX)*0.07;rotY+=(tRY-rotY)*0.07;
+  if(!isDrag)tRY+=0.0018;
+  pivot.rotation.x=rotX;pivot.rotation.y=rotY;
+  camera.position.z=6.8*zv;
+  if(selId){
+    regionMeshes.forEach(function(m){
+      if(m.userData.id===selId)m.material.emissiveIntensity=0.60+Math.sin(tick*2.5)*0.20;
+    });
+  }
+  renderer.render(scene,camera);
+})();
+</script>
+</body>
+</html>
