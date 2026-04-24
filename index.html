@@ -45,6 +45,24 @@ canvas:active{cursor:grabbing;}
 .li{display:flex;align-items:center;gap:7px;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;background:rgba(10,10,15,.8);padding:2px 8px 2px 4px;border-radius:2px;}
 .ld{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 #rh{position:absolute;bottom:16px;right:16px;font-size:.57rem;color:var(--muted);background:rgba(10,10,15,.8);padding:4px 9px;border-radius:2px;text-align:right;line-height:1.65;}
+@media(max-width:700px){
+  header{padding:9px 14px;gap:8px;flex-wrap:wrap;}
+  header h1{font-size:1rem;}
+  .sub{display:none;}
+  .hint{font-size:.55rem;margin-left:0;width:100%;}
+  main{flex-direction:column;}
+  #cc{flex:0 0 52vh;min-height:220px;}
+  #panel{width:100%;border-left:none;border-top:1px solid var(--border);flex:1;min-height:0;overflow-y:auto;}
+  #ph{padding:12px 14px 8px;}
+  #rn{font-size:.95rem;}
+  #pb{padding:12px 14px;}
+  #leg{bottom:8px;left:8px;gap:3px;}
+  .li{font-size:.5rem;padding:1px 6px 1px 3px;}
+  .ld{width:7px;height:7px;}
+  #rh{display:none;}
+  .sec p{font-size:.68rem;}
+  #es{padding:20px 14px;font-size:.68rem;}
+}
 </style>
 </head>
 <body>
