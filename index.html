@@ -46,13 +46,13 @@ canvas:active{cursor:grabbing;}
 .ld{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
 #rh{position:absolute;bottom:16px;right:16px;font-size:.76rem;color:var(--muted);background:rgba(10,10,15,.8);padding:4px 9px;border-radius:2px;text-align:right;line-height:1.65;}
 @media(max-width:700px){
-  header{padding:7px 14px;gap:4px 10px;flex-wrap:wrap;}
+  header{padding:5px 14px 4px;gap:1px 0;flex-direction:column;align-items:flex-start;}
   header h1{font-size:.95rem;}
-  .sub{font-size:.5rem;letter-spacing:.08em;}
-  .hint{display:block;font-size:.5rem;margin-left:0;}
+  .sub{font-size:.62rem;letter-spacing:.08em;display:block;width:100%;}
+  .hint{display:block;font-size:.5rem;margin-left:0;width:100%;}
   body{height:100dvh;overflow:hidden;}
-  main{flex-direction:column;height:100%;overflow:hidden;}
-  #cc{flex:0 0 62vh;width:100%;position:relative;}
+  main{flex-direction:column;height:100%;overflow:hidden;margin:0;padding:0;}
+  #cc{flex:0 0 48vh;width:100%;position:relative;margin-top:0;}
   #panel{
     width:100%;
     border-left:none;
