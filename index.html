@@ -102,7 +102,7 @@ canvas:active{cursor:grabbing;}
     </div>
   </div>
 </main>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script>
 var REGIONS=[
   {id:'prefrontal',name:'Corteza Prefrontal',latin:'Cortex praefrontalis',color:0x4a90c8,em:0x0d2a40,mat:28,matAge:'Madurez completa: 25-27 años',badge:'mid',bText:'Última región en madurar',
@@ -153,6 +153,26 @@ var REGIONS=[
    ado:'Conecta el mundo emocional con el racional. Es especialmente activo cuando evalúas si encajas en un grupo, cuando sientes dolor social, o cuando estás formando un hábito. En la adolescencia trabaja a toda velocidad porque todo eso pasa al mismo tiempo.',
    fut:'Al madurar permite tomar decisiones morales más complejas, sostener metas sin perder de vista cómo te sientes, y tener más empatía real — no solo entender a los demás, sino sentirlo.',
    risk:'Cuando esta región no se desarrolla bien, pueden aparecer ciclos de pensamiento negativo difíciles de parar, conductas compulsivas, o una sensación de desconexión entre lo que piensas y lo que sientes. El aislamiento social prolongado lo afecta directamente.'},
+  {id:'lobo_frontal',name:'Lóbulo Frontal',latin:'Lobus frontalis',color:0xf0a060,em:0x5a2800,mat:30,matAge:'Madurez completa: 25-28 años',badge:'mid',bText:'El lóbulo que más tarda',
+   ado:'El más grande de los cuatro lóbulos. Abarca desde la frente hasta el surco central. Contiene la corteza prefrontal, la corteza motora primaria y el área de Broca. En la adolescencia es la región de mayor cambio: pierde conexiones innecesarias (poda sináptica) y refuerza las útiles.',
+   fut:'Al madurar integra funciones ejecutivas, emocionales y motoras. Es la base anatómica del pensamiento complejo, la personalidad y la conducta social voluntaria.',
+   risk:'Daño o desarrollo interrumpido afecta el juicio, el control de impulsos y la capacidad de planear. Las lesiones frontales pueden cambiar radicalmente la personalidad sin afectar la inteligencia básica.'},
+  {id:'lobo_parietal',name:'Lóbulo Parietal',latin:'Lobus parietalis',color:0x60c0a0,em:0x003a20,mat:55,matAge:'Madurez completa: 20-22 años',badge:'ok',bText:'Integración sensorial y espacio',
+   ado:'Ubicado detrás del surco central, entre el frontal y el occipital. Procesa el tacto, la presión, la temperatura y la posición corporal. También integra información espacial y es clave para el cálculo matemático y la lectura.',
+   fut:'Al madurar conecta los datos sensoriales con los cognitivos: entender mapas, orientarse en el espacio, razonar en tres dimensiones. Fundamental para disciplinas como arquitectura, cirugía y matemáticas.',
+   risk:'Lesiones parietales producen síndromes como la negligencia espacial unilateral — la persona ignora todo lo que está en un lado del espacio — o la apraxia, incapacidad para realizar movimientos aprendidos.'},
+  {id:'lobo_temporal',name:'Lóbulo Temporal',latin:'Lobus temporalis',color:0xd47830,em:0x502000,mat:60,matAge:'Madurez completa: 20-22 años',badge:'ok',bText:'Lenguaje, memoria y reconocimiento',
+   ado:'Ubicado en los lados del cerebro, debajo del surco lateral (Silvio). Contiene la corteza auditiva primaria, el área de Wernicke y el hipocampo. Es el lóbulo más activo en la adolescencia para el procesamiento social: reconocimiento de caras, voces y emociones ajenas.',
+   fut:'Madura hacia habilidades de comprensión compleja: ironía, metáfora, narrativas largas. La memoria episódica autobiográfica — quién eres a lo largo del tiempo — se consolida aquí.',
+   risk:'Lesiones temporales producen afasia de Wernicke, incapacidad para reconocer caras (prosopagnosia), o amnesia severa. La epilepsia del lóbulo temporal puede causar alucinaciones auditivas y déjà vu intensos.'},
+  {id:'lobo_occipital',name:'Lóbulo Occipital',latin:'Lobus occipitalis',color:0x9050d0,em:0x300060,mat:85,matAge:'Madurez completa: 16-18 años',badge:'ok',bText:'El lóbulo de la visión',
+   ado:'El más pequeño de los cuatro, ubicado en la parte posterior del cerebro. Contiene la corteza visual primaria (V1) y áreas de procesamiento visual superior. Es uno de los primeros lóbulos en madurar.',
+   fut:'Con experiencia visual diversa, desarrolla capacidades de reconocimiento de patrones, lectura de imágenes complejas e integración visual con memoria y emoción.',
+   risk:'Lesiones occipitales producen ceguera cortical — los ojos funcionan pero el cerebro no procesa la imagen — o alucinaciones visuales. La migraña con aura suele originarse aquí.'},
+  {id:'wernicke',name:'Área de Wernicke',latin:'Area Wernicke',color:0xe060a0,em:0x500020,mat:60,matAge:'Madurez completa: 20-22 años',badge:'ok',bText:'La comprensión del lenguaje',
+   ado:'Ubicada en el lóbulo temporal izquierdo (área 22 de Brodmann), en el giro temporal superior. Es la región que permite entender lo que escuchas y lees. Trabaja en paralelo con el área de Broca a través del fascículo arqueado.',
+   fut:'Al madurar permite comprender el lenguaje en contextos ambiguos, la ironía, el humor y el subtexto emocional. La lectura literaria y las conversaciones profundas la refuerzan directamente.',
+   risk:'Una lesión aquí produce afasia de Wernicke: la persona habla con fluidez pero sin sentido, y no comprende lo que le dicen. Puede acompañarse de anosognosia — el paciente no sabe que tiene el problema.'},
 ];
 
 
@@ -324,10 +344,15 @@ var regionCfg={
   brainstem: {pos:[0,-1.15,0.04],sc:[0.19,0.48,0.19]},
   broca:         {pos:[1.10,0.05,0.80],sc:[0.28,0.22,0.25]},
   cingulate_gyrus:{pos:[0,0.60,-0.05],sc:[0.25,0.55,0.90]},
+  lobo_frontal:   {pos:[0,0.40,1.10],sc:[1.35,0.75,0.70]},
+  lobo_parietal:  {pos:[0,0.80,-0.30],sc:[1.20,0.55,0.75]},
+  lobo_temporal:  {pos:[1.10,-0.05,0.15],sc:[0.52,0.65,0.90]},
+  lobo_occipital: {pos:[0,0.20,-1.10],sc:[0.95,0.60,0.52]},
+  wernicke:       {pos:[1.05,0.05,-0.20],sc:[0.35,0.28,0.35]},
 };
 
 var regionMeshes=[];
-var bilateral=['temporal','amygdala','hipocampo','estriado'];
+var bilateral=['temporal','amygdala','hipocampo','estriado','lobo_temporal','wernicke'];
 
 REGIONS.forEach(function(r){
   var cfg=regionCfg[r.id];if(!cfg)return;
